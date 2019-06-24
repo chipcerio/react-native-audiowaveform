@@ -15,6 +15,8 @@
 -(void)OGWaveFinishPlay:(OGWaverformView *)waveformView componentID:(NSString *)componentID;
 -(void)OGWaveBeganProcessing:(OGWaverformView *)waveformView componentID:(NSString *)componentID;
 -(void)OGWaveFinishedProcessing:(OGWaverformView *)waveformView componentID:(NSString *)componentID;
+-(void)OGWaveFinishedProcessing:(OGWaverformView *)waveformView componentID:(NSString *)componentID;
+-(void)OGWaveHasProgressed:(OGWaverformView *)waveformView ToTime:(float)duration componentID:(NSString *)componentID;
 
 @end
 

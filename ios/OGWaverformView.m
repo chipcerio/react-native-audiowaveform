@@ -33,7 +33,7 @@
 
 -(void)reactSetFrame:(CGRect)frame{
 
-    if (!CGRectEqualToRect(self.view.frame, frame)) {
+    if (!CGRectEqualToRect(self.frame, frame)) {
       _waveformImage = nil;
     }
 
@@ -132,7 +132,7 @@
 
 -(void)playAudio{
     
-    _playbackTimer=[NSTimer scheduledTimerWithTimeInterval:0.1
+    _playbackTimer=[NSTimer scheduledTimerWithTimeInterval:0.03
                                                     target:self
                                                   selector:@selector(updateProgress:)
                                                   userInfo:nil
@@ -153,7 +153,7 @@
 {
     [self pauseAudio];
     [_player seekToTime: CMTimeMake(milliseconds, 1000)]; //[self adjustedCMtimeForMilliseconds:milliseconds]];
-    _playbackTimer=[NSTimer scheduledTimerWithTimeInterval:0.1
+    _playbackTimer=[NSTimer scheduledTimerWithTimeInterval:0.03
                                                     target:self
                                                   selector:@selector(updateProgress:)
                                                   userInfo:nil
@@ -162,7 +162,30 @@
 
 -(float)getDuration
 {
-    Float64 dur = CMTimeGetSeconds(_player.currentItem.duration);
+    
+    __block Float64 dur = CMTimeGetSeconds(self.asset.duration);;
+    
+    if(self.assetDuration)
+    {
+        dur = self.assetDuration;
+    }
+    
+//    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+//
+//    [self.asset loadValuesAsynchronouslyForKeys:@[@"duration"] completionHandler:^{
+//        NSError * error;
+//        switch ([self.asset statusOfValueForKey:@"duration" error:&error]) {
+//                case AVKeyValueStatusLoaded:
+//                dur = CMTimeGetSeconds(self.asset.duration);
+//                break;
+//            default:
+//                break;
+//        }
+//        dispatch_semaphore_signal(sema);
+//    }];
+//
+//    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    
     Float64 durInMiliSec = 1000*dur;
 
     return durInMiliSec;
@@ -190,6 +213,8 @@
     if(isnan(currentXPosScrub) || currentXPosScrub < 0 || currentXPosScrub > self.frame.size.width) {
         return;
     }
+    
+    [self.delegate OGWaveHasProgressed:self ToTime:f componentID:_componentID];
     
     [UIView animateWithDuration:0.1
                      animations:^{
@@ -239,13 +264,23 @@
     [_mdata writeToFile:_soundPath atomically:YES];
     
     NSURL * localUrl = [NSURL fileURLWithPath: _soundPath];
-    _asset = [AVURLAsset assetWithURL: localUrl];
-    
+    _asset = [AVURLAsset URLAssetWithURL:localUrl options:@{AVURLAssetPreferPreciseDurationAndTimingKey: @YES}];
     
     if (self.offsetEnd != 0 || self.offsetStart != 0 )
     {
-        _asset = [AVURLAsset assetWithURL: [NSURL fileURLWithPath: [self adjustAudioAsset:[AVURLAsset assetWithURL:localUrl]]]];
+        _asset = [AVURLAsset URLAssetWithURL: [NSURL fileURLWithPath: [self adjustAudioAsset:[AVURLAsset assetWithURL:localUrl]]] options:@{AVURLAssetPreferPreciseDurationAndTimingKey: @YES}];
     }
+    
+    [self.asset loadValuesAsynchronouslyForKeys:@[@"duration"] completionHandler:^{
+        NSError * error;
+        switch ([self.asset statusOfValueForKey:@"duration" error:&error]) {
+                case AVKeyValueStatusLoaded:
+                self.assetDuration = CMTimeGetSeconds(self.asset.duration);
+                break;
+            default:
+                break;
+        }
+    }];
     
     [self drawWaveform];
     
@@ -281,7 +316,7 @@
                     imageHeight:(float) imageHeight
 {
     CGSize imageSize = CGSizeMake(sampleCount, imageHeight);
-    UIGraphicsBeginImageContext(imageSize);
+    UIGraphicsBeginImageContextWithOptions(imageSize, false, UIScreen.mainScreen.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     CGContextSetFillColorWithColor(context, [UIColor clearColor].CGColor);

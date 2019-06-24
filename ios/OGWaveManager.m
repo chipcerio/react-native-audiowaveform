@@ -28,6 +28,7 @@ RCT_EXPORT_VIEW_PROPERTY(componentID, NSString);
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onFinishPlay, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onProcessing, RCTBubblingEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onAudioProgress, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onProcessCompleted, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(getDuration, float);
 
@@ -74,6 +75,15 @@ RCT_EXPORT_MODULE();
         return;
     waveformView.onProcessCompleted(@{@"onProcessCompleted":@"true",@"componentID":componentID});
 }
+
+
+-(void)OGWaveHasProgressed:(OGWaverformView *)waveformView ToTime:(float)duration componentID:(NSString *)componentID
+{
+    if(!waveformView.onAudioProgress)
+        return;
+    waveformView.onAudioProgress(@{@"progress":@(duration) , @"componentID":componentID});
+}
+
 
 RCT_EXPORT_METHOD(seekToTime:(float)milliseconds
 {
