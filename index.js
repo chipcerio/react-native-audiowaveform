@@ -34,6 +34,34 @@ export default class WaveForm extends PureComponent<WaveObjectPropsType, StateTy
         this.setNativeProps({ seek: time });
     };
 
+    setPlaybackRate = playbackRate => {
+        playbackRate = Number(playbackRate);
+        // alert(`Value being passed ${time} of type ${typeof time} `);
+        // }
+
+        if (isNaN(playbackRate)) throw new Error("Specified Rate is not a number");
+        this.setNativeProps({ playbackRate: playbackRate });
+    };
+
+    // setStartOffset = time => {
+    //     // if (typeof time == "string") {
+    //     time = Number(time);
+    //     // alert(`Value being passed ${time} of type ${typeof time} `);
+    //     // }
+
+    //     // if (isNaN(time)) throw new Error("Specified time is not a number");
+    //     this.setNativeProps({ offsetStart: time });
+    // };
+
+    // setEndOffset = time => {
+    //     // if (typeof time == "string") {
+    //     time = Number(time);
+    //     // alert(`Value being passed ${time} of type ${typeof time} `);
+    //     // }
+    //     // if (isNaN(time)) throw new Error("Specified time is not a number");
+    //     this.setNativeProps({ offsetEnd: time });
+    // };
+
     play() {
         this.setNativeProps({ play: true });
     }
@@ -68,13 +96,38 @@ export default class WaveForm extends PureComponent<WaveObjectPropsType, StateTy
         this.setState({ componentID });
     }
 
+    // componentDidMount() {
+    //     const { source } = this.props;
+    //     const assetResoved = resolveAssetSource(source) || {};
+
+    //     let uri = assetResoved.uri;
+    //     if (uri && uri.match(/^\//)) {
+    //         uri = `file://${uri}`;
+    //     }
+
+    //     const isNetwork = !!(uri && uri.match(/^https?:/));
+    //     const isAsset = !!(uri && uri.match(/^(assets-library|file|content|ms-appx|ms-appdata):/));
+
+    //     const sourceObject = {
+    //         src: {
+    //             uri,
+    //             isNetwork,
+    //             isAsset,
+    //             type: source.type,
+    //             mainVer: source.mainVer || 0,
+    //             patchVer: source.patchVer || 0
+    //         }
+    //     };
+    //     this.setNativeProps(sourceObject);
+    // }
+
     _assignRoot = component => {
         this._root = component;
     };
 
     render() {
-        const { source } = this.props;
         const { componentID } = this.state;
+        const { source } = this.props;
         const assetResoved = resolveAssetSource(source) || {};
 
         let uri = assetResoved.uri;
@@ -93,7 +146,6 @@ export default class WaveForm extends PureComponent<WaveObjectPropsType, StateTy
                 ogTimeOffsetStart: this.props.waveFormStyle.offsetStart,
                 ogTimeOffsetEnd: this.props.waveFormStyle.offsetEnd
             },
-
             src: {
                 uri,
                 isNetwork,
@@ -107,10 +159,10 @@ export default class WaveForm extends PureComponent<WaveObjectPropsType, StateTy
 
         return (
             <OGWaverformView
-                {...nativeProps}
                 ref={this._assignRoot}
                 onPress={this._onPress}
                 onFinishPlay={this._onFinishPlay}
+                {...nativeProps}
             />
         );
     }

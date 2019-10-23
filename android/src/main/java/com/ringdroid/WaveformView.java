@@ -29,10 +29,13 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.facebook.react.bridge.ReactContext;
+import com.otomogroove.OGReactNativeWaveform.CheapSoundFile;
 import com.otomogroove.OGReactNativeWaveform.OGWaveView;
+import com.otomogroove.OGReactNativeWaveform.Utilities;
 import com.ringdroid.soundfile.SoundFile;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,9 +59,30 @@ import java.security.SecureRandom;
  * the selected part of the waveform in a different color.
  */
 public class WaveformView extends View {
-    public void setmURI(String mURI) {
+
+    private long mStartOffset;
+    private long mEndOffset;
+
+    public void setmURI(String mURI, long startOffset, long endOffset)
+    {
         this.mURI = mURI;
-        String filePath = Environment.getExternalStorageDirectory().toString() + "/"+random()+".mp3";
+
+        this.mStartOffset = startOffset;
+        this.mEndOffset = endOffset;
+
+//        String filePath = Environment.getExternalStorageDirectory().toString() + "/"+random()+".wav";
+//        new DownloadFileFromURL().execute(this.mURI,filePath);
+    }
+
+    public void setOffsets(long startOffset, long endOffset)
+    {
+        this.mStartOffset = startOffset;
+        this.mEndOffset = endOffset;
+    }
+
+    public void processAudio()
+    {
+        String filePath = Environment.getExternalStorageDirectory().toString() + "/"+random()+".wav";
         new DownloadFileFromURL().execute(this.mURI,filePath);
     }
 
@@ -92,6 +116,8 @@ public class WaveformView extends View {
         protected SoundFile doInBackground(String... f_url) {
             int count;
             String filePath = f_url[1];
+            String tempPath = Environment.getExternalStorageDirectory().toString() + "/"+"temp"+".wav";
+
             SoundFile soundFile = null;
             try {
                 URL url = new URL(f_url[0]);
@@ -106,10 +132,8 @@ public class WaveformView extends View {
                 InputStream input = new BufferedInputStream(url.openStream(),
                         8192);
 
-
-
                 // Output stream
-                OutputStream output = new FileOutputStream(filePath);
+                OutputStream output = new FileOutputStream(tempPath);
 
                 byte data[] = new byte[1024];
 
@@ -131,8 +155,22 @@ public class WaveformView extends View {
                 // closing streams
                 output.close();
                 input.close();
-                Log.e("XSXGOT","Audio file complented + "+filePath);
 
+                final CheapSoundFile.ProgressListener listener = new CheapSoundFile.ProgressListener() {
+                    public boolean reportProgress(double frac) {
+                        return true;
+                    }
+                };
+
+                CheapSoundFile cheapSoundFile = CheapSoundFile.create(tempPath,listener);
+                int mSampleRate = cheapSoundFile.getSampleRate();
+                int mSamplesPerFrame = cheapSoundFile.getSamplesPerFrame();
+                double mTotalTime = ((double)cheapSoundFile.getFileSizeBytes() / (mSampleRate * 2));
+                int startFrame = Utilities.secondsToFrames(mStartOffset/1000,mSampleRate, mSamplesPerFrame);
+                int endFrame = Utilities.secondsToFrames(mEndOffset/1000, mSampleRate,mSamplesPerFrame);
+                int sizeFrame = Utilities.secondsToFrames(mTotalTime, mSampleRate,mSamplesPerFrame);
+                cheapSoundFile.WriteFile( new File(filePath), startFrame, (sizeFrame - endFrame) - startFrame);
+                Log.e("XSXGOT","Audio file complented + "+filePath);
             } catch (Exception e) {
                 Log.e("XSXGOT Error: ", e.getMessage());
                 filePath = f_url[0];

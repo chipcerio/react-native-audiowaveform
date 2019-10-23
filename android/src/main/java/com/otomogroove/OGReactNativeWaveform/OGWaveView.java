@@ -36,6 +36,11 @@ public class OGWaveView extends FrameLayout {
     private int mWaveColor;
     private int mScrubColor;
 
+    public long mStartOffset;
+    public long mEndOffset;
+
+
+
     private boolean mAutoplay = false;
     private boolean isCreated = false;
 
@@ -55,21 +60,39 @@ public class OGWaveView extends FrameLayout {
 
     }
     public void setmWaveColor(int mWaveColor) {
-
         this.mWaveView.setmWaveColor(mWaveColor);
-
-
     }
+
     public void setScrubColor(int scrubcolor){
         mScrubColor = scrubcolor;
         mUIWave.scrubColor=this.mScrubColor;
         mUIWave.invalidate();
     }
 
+    public void setOffsetStart(long offsetStart)
+    {
+        mStartOffset = offsetStart;
+        this.mWaveView.setOffsets(mStartOffset, mEndOffset);
+    }
+
+    public void setOffsetEnd(long offsetEnd)
+    {
+        mEndOffset = offsetEnd;
+        this.mWaveView.setOffsets(mStartOffset, mEndOffset);
+        this.mWaveView.processAudio();
+    }
+
     public void seekToTime(long time)
     {
         mMediaPlayer.seekTo((int)time);
-        new UpdateProgressRequest().execute();
+        Float currrentPos = (float) mMediaPlayer.getCurrentPosition()/mMediaPlayer.getDuration();
+        mUIWave.updatePlayHead(currrentPos);
+//        new UpdateProgressRequest().execute();
+    }
+
+    public void setPlaybackRate(float speed)
+    {
+        mMediaPlayer.setPlaybackParams(mMediaPlayer.getPlaybackParams().setSpeed(speed));
     }
 
     public void onPlay(boolean play)
@@ -93,6 +116,7 @@ public class OGWaveView extends FrameLayout {
     public void onPause(){
         this.mMediaPlayer.pause();
     }
+
     public void onStop(){
         this.mMediaPlayer.stop();
     }
@@ -151,7 +175,8 @@ public class OGWaveView extends FrameLayout {
             return;
         }
 
-        this.mWaveView.setmURI(uri);
+
+        this.mWaveView.setmURI(uri, this.mStartOffset, this.mEndOffset);
 
         if (!isCreated) {
             isCreated = true;
@@ -234,9 +259,10 @@ public class OGWaveView extends FrameLayout {
         @Override
         protected void onPostExecute(Float aFloat) {
             super.onPostExecute(aFloat);
-
-
-            mUIWave.updatePlayHead(aFloat);
+            if(aFloat != null)
+            {
+                mUIWave.updatePlayHead(aFloat);
+            }
         }
     }
 

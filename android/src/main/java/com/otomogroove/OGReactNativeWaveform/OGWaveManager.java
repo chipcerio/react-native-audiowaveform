@@ -2,6 +2,7 @@ package com.otomogroove.OGReactNativeWaveform;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -97,16 +98,54 @@ public class OGWaveManager extends SimpleViewManager<OGWaveView> implements Life
         Toast.makeText(mcontext, "SAVE US!", Toast.LENGTH_LONG);
     }
 
-    @ReactMethod
-    public void setPlaybackRate(float position)
-    {
-        Toast.makeText(mcontext, "HELP US GOD!", Toast.LENGTH_LONG);
+//    @ReactMethod
+////    public void setPlaybackRate(float position)
+////    {
+////        Toast.makeText(mcontext, "HELP US GOD!", Toast.LENGTH_LONG);
+////    }
+
+    @ReactProp(name = "playbackRate")
+    public void setPlaybackRate(OGWaveView view, double src) {
+        view.setPlaybackRate((float)src);
+    }
+
+    @ReactProp(name = "playbackTime")
+    public void setPlaybackTime(OGWaveView view, @Nullable ReadableMap src) {
+        view.seekToTime((long)src.getDouble("playbackTime"));
+    }
+
+//    @ReactProp(name = "offsetStart")
+//    public void setOffsetStart(OGWaveView view, final float seek) {
+//        view.setOffsetStart((long)seek);
+//    }
+//
+//    @ReactProp(name = "offsetEnd")
+//    public void setOffsetEnd(OGWaveView view, final float seek) {
+//        view.setOffsetEnd((long)seek);
+//    }
+
+    @ReactProp(name = "waveFormStyle")
+    public void setWaveFormStyle(OGWaveView view, @Nullable ReadableMap waveFormStyle) {
+        view.setmWaveColor(waveFormStyle.getInt("ogWaveColor"));
+        view.setScrubColor(waveFormStyle.getInt("ogScrubColor"));
+        view.setOffsetStart((long)waveFormStyle.getDouble("ogTimeOffsetStart"));
+        view.setOffsetEnd((long)waveFormStyle.getDouble("ogTimeOffsetEnd"));
     }
 
    @ReactProp(name = "src")
-    public void setSrc(OGWaveView view, @Nullable ReadableMap src) {
-        view.setURI(src.getString("uri"));
+    public void setSrc(final OGWaveView view, @Nullable final ReadableMap src) {
+       view.setURI(src.getString("uri"));
+//        Handler newHandler =  new Handler();
+//        newHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                view.setURI(src.getString("uri"));
+//            }
+//        }, 1000);
     }
+
+
+
 
     private static final String PROP_SEEK = "seek";
     @ReactProp(name = PROP_SEEK)
@@ -130,18 +169,12 @@ public class OGWaveManager extends SimpleViewManager<OGWaveView> implements Life
     }
 
 
-    @ReactProp(name = "waveFormStyle")
-    public void setWaveFormStyle(OGWaveView view, @Nullable ReadableMap waveFormStyle) {
 
 
-        view.setmWaveColor(waveFormStyle.getInt("ogWaveColor"));
-        view.setScrubColor(waveFormStyle.getInt("ogScrubColor"));
-    }
     @ReactProp(name = "play")
-    public void setPlay(OGWaveView view, @Nullable boolean play) {
-
-            view.onPlay(play);
-
+    public void setPlay(OGWaveView view, @Nullable boolean play)
+    {
+        view.onPlay(play);
     }
 
 
