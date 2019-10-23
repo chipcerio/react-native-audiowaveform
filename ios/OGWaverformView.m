@@ -106,6 +106,12 @@
     NSLog(@"play finished ::: %@",_soundPath);
     [_player seekToTime:CMTimeMake(0,1)];
     [_delegate OGWaveFinishPlay:self componentID:_componentID];
+    [UIView animateWithDuration:0.1
+                     animations:^{
+                         CGRect frame = _scrubView.frame;
+                         frame.origin.x = -_scrubView.frame.size.width/2;
+                         _scrubView.frame = frame;
+                     }];
 }
 
 -(void)setAutoPlay:(BOOL)autoPlay{
@@ -219,7 +225,7 @@
     [UIView animateWithDuration:0.1
                      animations:^{
                          CGRect frame = _scrubView.frame;
-                         frame.origin.x = currentXPosScrub;
+                         frame.origin.x = currentXPosScrub - _scrubView.frame.size.width/2;
                          _scrubView.frame = frame;
                      }];
 }
@@ -233,6 +239,8 @@
     //    _propSrc = src;
     NSLog(@"SRC ::: %@",src);
     [self.delegate OGWaveBeganProcessing:self componentID:_componentID];
+    
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
     
     //Retrieve audio file
     NSString *uri =  [src objectForKey:@"uri"];
@@ -304,8 +312,16 @@
 
 -(UIView *)getPlayerScrub{
     
-    UIView *viewAux = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 2,self.frame.size.height )];
-    [viewAux setBackgroundColor:_scrubColor];
+    int size = MAX(self.frame.size.width/(self.assetDuration * 30), 20);
+    if(!self.assetDuration)
+    {
+        size = self.frame.size.width;
+    }
+    UIView *viewAux = [[UIView alloc] initWithFrame:CGRectMake(0, 0, size,self.frame.size.height )];
+    [viewAux setBackgroundColor:UIColor.clearColor];
+    [viewAux.layer setBorderColor:_scrubColor.CGColor];
+    [viewAux.layer setBorderWidth:2];
+    [viewAux setTransform:CGAffineTransformMakeTranslation(-size/2, 0)];
     return viewAux;
 }
 
@@ -398,7 +414,7 @@
     AVAssetReaderTrackOutput* output = [[AVAssetReaderTrackOutput alloc] initWithTrack:songTrack outputSettings:outputSettingsDict];
     
     [reader addOutput:output];
-    UInt32 sampleRate,channelCount;
+    UInt32 sampleRate = 0,channelCount;
     
     NSArray* formatDesc = songTrack.formatDescriptions;
     for(unsigned int i = 0; i < [formatDesc count]; ++i) {
@@ -429,6 +445,10 @@
     Float32 sampleTally = 0;
     
     NSInteger samplesPerPixel = sampleRate / 50;
+    
+    if (self.assetDuration >= 0 && self.assetDuration < 1) {
+        samplesPerPixel = sampleRate/5000;
+    }
     
     while (reader.status == AVAssetReaderStatusReading){
         

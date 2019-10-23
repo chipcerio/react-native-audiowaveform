@@ -8,8 +8,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactMethod;
 import com.ringdroid.WaveformView;
 import com.ringdroid.soundfile.SoundFile;
 
@@ -64,20 +66,30 @@ public class OGWaveView extends FrameLayout {
         mUIWave.invalidate();
     }
 
-    public void onPlay(boolean play){
+    public void seekToTime(long time)
+    {
+        mMediaPlayer.seekTo((int)time);
+        new UpdateProgressRequest().execute();
+    }
+
+    public void onPlay(boolean play)
+    {
         if(play){
             this.mMediaPlayer.start();
-
-
         }else{
             if(mMediaPlayer != null && mMediaPlayer.isPlaying())
                 mMediaPlayer.pause();
 
         }
-
         progressReportinghandler.postDelayed(progressRunnable, 500);
-
     }
+
+    @ReactMethod
+    public void CoolMethod(String alertText)
+    {
+        Toast.makeText(mContext, alertText, Toast.LENGTH_LONG);
+    }
+
     public void onPause(){
         this.mMediaPlayer.pause();
     }
@@ -195,6 +207,9 @@ public class OGWaveView extends FrameLayout {
 
     public void setComponentID(String componentID) {
         this.componentID = componentID;
+    }
+
+    public void seekToTime() {
     }
 
 

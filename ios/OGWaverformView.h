@@ -38,6 +38,7 @@ typedef enum {
 @property(nonatomic) float volume;
 @property(nonatomic) float offsetStart;
 @property(nonatomic) float offsetEnd;
+@property(nonatomic) float assetDuration;
 @property(nonatomic) NSString *componentID;
 @property(nonatomic) BOOL autoPlay;
 @property(nonatomic) BOOL play;
@@ -59,6 +60,7 @@ typedef enum {
 @property (nonatomic, copy) RCTBubblingEventBlock onPress;
 @property (nonatomic, copy) RCTBubblingEventBlock onFinishPlay;
 @property (nonatomic, copy) RCTBubblingEventBlock onProcessing;
+@property (nonatomic, copy) RCTBubblingEventBlock onAudioProgress;
 @property (nonatomic, copy) RCTBubblingEventBlock onProcessCompleted;
 //@property(nonatomic) NSDictionary * propSrc;
 

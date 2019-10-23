@@ -1,22 +1,34 @@
 package com.otomogroove.OGReactNativeWaveform;
 
+import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 
+import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.view.ReactViewManager;
 import com.ringdroid.WaveformView;
 
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.facebook.react.common.ReactConstants.TAG;
 
@@ -26,21 +38,18 @@ import static com.facebook.react.common.ReactConstants.TAG;
 
 public class OGWaveManager extends SimpleViewManager<OGWaveView> implements LifecycleEventListener,WaveformView.WaveformListener {
 
-
-
-
     private Callback onPressCallback;
-    public static final String REACT_CLASS = "OGWave";
     private ReactContext mcontext;
-    //private WaveformView mWaveView;
+    private OGWaveView _mWaveView;
+    private Activity mCurrentActivity;
+    public static final int COMMAND_SEEK_TO_TIME= 1;
+
+    private static final String REACT_CLASS = "OGWaveManager";
 
     @Override
     public String getName() {
-
         return REACT_CLASS;
     }
-
-
 
     @Override
     public OGWaveView createViewInstance(ThemedReactContext context) {
@@ -51,8 +60,7 @@ public class OGWaveManager extends SimpleViewManager<OGWaveView> implements Life
         OGWaveView mWaveView = new OGWaveView(context);
 
         mWaveView.setWaveformListener(this);
-
-
+        _mWaveView = mWaveView;
         return mWaveView;
     }
 
@@ -75,9 +83,35 @@ public class OGWaveManager extends SimpleViewManager<OGWaveView> implements Life
         }
     }
 
+    @javax.annotation.Nullable
+    @Override
+    public Map<String, Object> getExportedViewConstants() {
+        final Map<String, Object> constants =  new HashMap<>();
+        constants.put("WaveConstant" , 16000);
+        return constants;
+    }
+
+    @ReactMethod
+    public void seekToTime(long position)
+    {
+        Toast.makeText(mcontext, "SAVE US!", Toast.LENGTH_LONG);
+    }
+
+    @ReactMethod
+    public void setPlaybackRate(float position)
+    {
+        Toast.makeText(mcontext, "HELP US GOD!", Toast.LENGTH_LONG);
+    }
+
    @ReactProp(name = "src")
     public void setSrc(OGWaveView view, @Nullable ReadableMap src) {
         view.setURI(src.getString("uri"));
+    }
+
+    private static final String PROP_SEEK = "seek";
+    @ReactProp(name = PROP_SEEK)
+    public void setSeek(OGWaveView view, final float seek) {
+        view.seekToTime((long)seek);
     }
 
     @ReactProp(name="componentID")
@@ -199,6 +233,39 @@ public class OGWaveManager extends SimpleViewManager<OGWaveView> implements Life
     @Override
     public void waveformZoomOut() {
 
+    }
+
+    @Override
+    public Map<String,Integer> getCommandsMap() {
+        Log.d("React"," View manager getCommandsMap:");
+        return MapBuilder.of(
+                "CoolMethod",
+                COMMAND_SEEK_TO_TIME);
+    }
+
+    @Override
+    public void receiveCommand(
+            OGWaveView view,
+            int commandType,
+            @Nullable ReadableArray args) {
+        Assertions.assertNotNull(view);
+        Assertions.assertNotNull(args);
+        switch (commandType) {
+            case COMMAND_SEEK_TO_TIME: {
+                view.CoolMethod(args.getString(0));
+                return;
+            }
+//            case COMMAND_RESET_IMAGE: {
+//                view.reset();
+//                return;
+//            }
+
+            default:
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported command %d received by %s.",
+                        commandType,
+                        getClass().getSimpleName()));
+        }
     }
 }
 
