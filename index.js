@@ -186,5 +186,5 @@ export default class WaveForm extends PureComponent<
 
 const OGWaverformView =
   Platform.OS === "ios"
-    ? requireNativeComponent("OGWaveManager", WaveForm)
+    ? requireNativeComponent("OGWave", WaveForm)
     : requireNativeComponent("OGWaveManager");
