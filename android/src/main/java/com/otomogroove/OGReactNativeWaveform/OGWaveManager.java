@@ -3,7 +3,7 @@ package com.otomogroove.OGReactNativeWaveform;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 

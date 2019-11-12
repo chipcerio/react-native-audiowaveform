@@ -62,26 +62,39 @@ public class WaveformView extends View {
 
     private long mStartOffset;
     private long mEndOffset;
+    private boolean mOffsetsBeingSet;
 
     public void setmURI(String mURI, long startOffset, long endOffset)
     {
         this.mURI = mURI;
 
-        this.mStartOffset = startOffset;
-        this.mEndOffset = endOffset;
+        this.setOffsets(startOffset, endOffset);
 
 //        String filePath = Environment.getExternalStorageDirectory().toString() + "/"+random()+".wav";
 //        new DownloadFileFromURL().execute(this.mURI,filePath);
+    }
+
+    public void resetState()
+    {
+        this.mURI = null;
+        this.mOffsetsBeingSet = false;
     }
 
     public void setOffsets(long startOffset, long endOffset)
     {
         this.mStartOffset = startOffset;
         this.mEndOffset = endOffset;
+        this.mOffsetsBeingSet = true;
+        this.processAudio();
     }
 
     public void processAudio()
     {
+        if (this.mURI == null || this.mOffsetsBeingSet == false)
+        {
+            return;
+        }
+
         String filePath = Environment.getExternalStorageDirectory().toString() + "/"+random()+".wav";
         new DownloadFileFromURL().execute(this.mURI,filePath);
     }
