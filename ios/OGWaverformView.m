@@ -307,6 +307,8 @@
 -(void)setPlaybackRate:(float)rate {
 //    [_player setRate:rate];
     [self.player setRate:rate];
+    NSLog(@"PLAYBACK_RATE: %f", rate);
+
 }
 
 
